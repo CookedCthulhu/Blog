@@ -15,8 +15,8 @@ public class Processor : IProcessor
 }
 ```
 ... where IO is explicitly marked in three different places.
-- `async` because you do not want your app to lag or your web server run out of threads. There are very vew cases where `async` does not imply IO.
-- `IDbConnector` because you _might_ want to mock IO away for testing. Or use a different database later on... because that always works without major changes.
+- `async` because you do not want your app to lag or your web server run out of threads. There are very few cases where `async` does not imply IO.
+- `IDbConnector` because you _might_ want to mock IO away for testing. Or use a different database later on... because that always works without breaking changes.
 - `IProcessor` because correctly mocking a database connector is hard and you don't want to deal with that.
 
-Academia has good reasons for handling things in a certain way and we should pay more attention.
+Of course, it's less composable than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. Because it's not and never was about composability or stability, it's a bandaid for the underlying problems that come with IO. Academia has good reasons for handling things in a certain way and we should pay more attention.
