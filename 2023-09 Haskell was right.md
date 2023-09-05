@@ -16,7 +16,7 @@ public class Processor : IProcessor
 ```
 ... where IO is explicitly marked in three different places.
 - `async` because you do not want your app to lag or your web server run out of threads. There are very vew cases where `async` does not imply IO.
-- `IDbConnector` because you _might_ want to mock IO away for testing. Or use a different database later on (because that always works first try...).
+- `IDbConnector` because you _might_ want to mock IO away for testing. Or use a different database later on... because that always works without major changes.
 - `IProcessor` because correctly mocking a database connector is hard and you don't want to deal with that.
 
 Maybe, just maybe, academia has good reasons for handling things in a certain way and we should pay more attention.
