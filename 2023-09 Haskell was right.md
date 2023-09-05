@@ -5,7 +5,7 @@ It's somewhat ironic that many programmers think that the (IO) monad is overly c
 ```c#
 public class Processor : IProcessor
 {
-    private static readonly IDbConnector dbConnector;
+    private readonly IDbConnector dbConnector;
 
     public async Task<...> ProcessData(string arguments)
     {
