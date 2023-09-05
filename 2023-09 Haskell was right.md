@@ -7,9 +7,9 @@ public class Processor : IProcessor
 {
     private readonly IDbConnector dbConnector;
 
-    public async Task<...> ProcessData(string arguments)
+    public async Task<...> ProcessData(int id)
     {
-        var data = await dbConnector.QueryAsync(arguments);
+        var data = await dbConnector.QueryAsync(id);
         return TransformData(data);
     }
 }
