@@ -19,4 +19,4 @@ public class Processor : IProcessor
 - `IDbConnector` because you _might_ want to mock IO away for testing.
 - `IProcessor` because correctly mocking a database connector is hard and you don't want to deal with that.
 
-Maybe, just maybe, academia has good reasons for handling things in a certain way.
+Maybe, just maybe, academia has good reasons for handling things in a certain way and we should pay more attention.
