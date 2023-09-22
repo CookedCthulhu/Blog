@@ -24,4 +24,7 @@ public class Processor : IProcessor
 - `IDbConnector` because you _might_ want to mock IO away for testing. Or use a different database later on... because that always works without breaking changes.
 - `IProcessor` because Dependency Injection is the best thing since sliced bread and correctly mocking a database connector is hard.
 
-Of course, all of this is less general than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing. Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.
+Of course, all of this is less general than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing. 
+
+
+Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.
