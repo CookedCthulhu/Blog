@@ -1,0 +1,30 @@
+:root {
+    --main-font-color: white;
+    --main-bg-color: #050505;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--main-font-color);
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.7rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.3rem;
+}
+
+div>.textarea {
+    overflow: auto;
+    margin-left: calc(50% - 400px);
+    width: 800px;
+}
