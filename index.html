@@ -23,16 +23,66 @@
         </svg>
     </div>
     <div class="textarea">
-        <h1>H1 Heading</h1>
-        <h2>H2 Heading</h2>
-        <h3>H2 Heading</h3>
-        <p>Hello, github pages!</p>
+        <h2>Vectorization has come a long way in .NET</h2>
+        <p class="italic smaller">Disclaimer: I wrote this blog post originally for my employer's website, Tekaris. The website does no longer exist to my knowledge.</p>
+        <br>
+        <p>Vectorization, or Single Instruction Multiple Data (SIMD), is the art of performing the same operation simultaneously on a small block of different pieces of data. While many compilers do support some kind of auto-vectorization, it's often fragile and even small changes can break everything. But SIMD code written by hand is difficult to read and has to be implemented multiple times for multiple platforms, with fallbacks if the customer's CPU doesn't support it.</p>
+        <br>
+        <p>Over the Christmas holidays I had the chance to revisit and port a personal project from .NET 6 to .NET 7 and gave vectorization a second look. I don't think the above statement is 100% true anymore. In some way, it turned out to be the opposite. Let me give you an example, a `Color` struct with two methods: `Equals` as an example for an operator and `AlphaBlend`, which is a simple textbook implementation of layering two pixels on top of each other.</p>
         <div class="code">
-            <p class="indent-0">public class Test</p>
+            <p class="indent-0">[StructLayout(LayoutKind.Sequential)]</p>
+            <p class="indent-0">public readonly struct Color</p>
             <p class="indent-0">&lbrace;</p>
-            <p class="indent-1"> public static blah;</p>
+            <p class="indent-1">public float A { get; }</p>
+            <p class="indent-1">public float R { get; }</p>
+            <p class="indent-1">public float G { get; }</p>
+            <p class="indent-1">public float B { get; }</p>
+            <br>
+            <p class="indent-1">public Color AlphaBlend(Color top) => new&lpar;</p>
+            <p class="indent-2">top.A + A * &lpar;1 - top.A&rpar;,</p>
+            <p class="indent-2">top.R + R * &lpar;1 - top.A&rpar;,</p>
+            <p class="indent-2">top.G + G * &lpar;1 - top.A&rpar;,</p>
+            <p class="indent-2">top.B + B * &lpar;1 - top.A&rpar;&rpar;;</p>
+            <br>
+            <p class="indent-1">public bool Equals(Color other) =></p>
+            <p class="indent-2">A == other.A</p>
+            <p class="indent-2">&& R == other.R</p>
+            <p class="indent-2">&& G == other.G</p>
+            <p class="indent-2">&& B == other.B;</p>
             <p class="indent-0">&rbrace;</p>
         </div>
+        <p>While both methods are four lines long, the actual logic is only one line, repeated four times. As the name suggests, Single Instruction Multiple Data is meant for these kinds of tasks.</p>
+        <h3>C#'s Vector in the past</h3>
+        <p>C# provides four different types that help us with vectorization: <span class="code-inline">Vector64&lt;T&gt;</span>, <span class="code-inline">Vector128&lt;T&gt;</span>, <span class="code-inline">Vector256&lt;T&gt;</span> and <span class="code-inline">Vector&lt;T&gt;</span>. <span class="code-inline">Vector&lt;T&gt;</span> has an unspecified size and will use one of the other three types internally. The others are fixed size, as their name suggests, but can be split in different ways. One <span class="code-inline">Vector128</span> can hold two 64 bit <span class="code-inline">long</span>, four 32 bit <span class="code-inline">int</span> or eight 16 bit <span class="code-inline">short</span>. Floating point numbers are supported as well but custom structs will fail at runtime.</p>
+        <p>I did implement a vectorized version of <span class="code-inline">AlphaBlend</span> prior to C# 11 for performance and curiosity. It wasn't pretty. <span class="code-inline">Color</span> is a struct of four 32 bit <span class="code-inline">float</span>s, which is 128 bit in total, the same size as <span class="code-inline">Vector128&lt;float&gt;</span>. To perform operations on a <span class="code-inline">Vector128</span>, you had to use the functions defined in the <span class="code-inline">Sse</span>/<span class="code-inline">Avx</span> static classes. These will fail at runtime if the host's CPU doesn't support them and it's up to you to cover the possibility.</p>
+    </div>
+    <div class="textarea">
+        <h2>Haskell was right</h2>
+        <p>It's somewhat ironic that many programmers think that the (IO) monad is overly complicated and solves problems that could only ever exist in a pure lazy functional programming language; Yet, at the same time, are convinced that the following code should be considered good practice:</p>
+        <div class="code">
+            <p class="indent-0">public interface IProcessor</p>
+            <p class="indent-0">&lbrace;</p>
+            <p class="indent-1">async Task<...> ProcessData(int id);</p>
+            <p class="indent-0">&rbrace;</p>
+            <br/>
+            <p class="indent-0">public class Processor : IProcessor</p>
+            <p class="indent-0">&lbrace;</p>
+            <p class="indent-1">private readonly IDbConnector dbConnector;</p>
+            <br/>
+            <p class="indent-1">public async Task<...> ProcessData(int id)</p>
+            <p class="indent-1">&lbrace;</p>
+            <p class="indent-2">var data = await dbConnector.QueryAsync(id);</p>
+            <p class="indent-2">return TransformData(data);</p>
+            <p class="indent-1">&rbrace;</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <p>... where IO is explicitly marked in three different places.</p>
+        <p>- <span class="code-inline">async</span> because you do not want your app to lag or your web server run out of threads. There are very few cases where <span class="code-inline">async</span> does not imply IO.</p>
+        <p>- <span class="code-inline">IDbConnector</span> because you might want to mock IO away for testing. Or use a different database later on... because that always works without breaking changes...</p>
+        <p>- <span class="code-inline">IProcessor</span> because Dependency Injection is the best thing since sliced bread and correctly mocking a database connector is hard.</p>
+        <br>
+        <p>Of course, all of this is less general than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing.</p>
+        <p>Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.</p>
     </div>
   </body>
 </html>

@@ -1,6 +1,6 @@
 :root {
     --main-font-color: white;
-    --main-bg-color: #070A0F;
+    --main-bg-color: #17191E;
     --phthalo-green: #16433d;
     background-color: var(--main-bg-color);
 }
@@ -11,29 +11,25 @@ h1, h2, h3, h4, h5, p, span {
     font-family: sans-serif, Verdana, Helvetica, "Trebuchet MS";
 }
 
-h1 {
-    font-size: 5.5rem;
-}
+p { padding: 0.2rem; }
 
-h2 {
-    font-size: 3.4rem;
-}
+h1 { font-size: 5.5rem; padding: 2rem 0; }
+h2 { font-size: 2.9rem; padding: 1rem 0; }
+h3 { font-size: 1.8rem; padding: 0.8rem 0; }
+h4 { font-size: 1.3rem; padding: 0.5rem 0; }
+p, span { font-size: 1.1rem; line-height: 150%; }
 
-h3 {
-    font-size: 2.1rem;
-}
-
-h4 {
-    font-size: 1.3rem;
-}
+.italic { font-style: italic; }
+.smaller { font-size: 0.8rem; }
 
 div.header {
+    position: sticky;
+    top: 0px;
     width: 100%;
-    height: 8rem;
 }
 div.header > div {
     background-color: var(--phthalo-green);
-    height: 6rem;
+    height: 4rem;
 }
 div.header > svg {
     height: 2rem;
@@ -41,20 +37,33 @@ div.header > svg {
 }
 
 div.code {
-    width: 100%;
-    margin: 0.5rem;
-    border-radius: 5px solid var(--phthalo-green);
+    margin: 3.0rem 5.0rem 3.0rem 0.5rem;
+    border: 1px solid var(--phthalo-green);
+    border-radius: 1rem;
+    padding: 1rem;
 }
 
-div.code .indent-0 { padding-left: 0.5rem; }
-div.code .indent-1 { padding-left: 1.5rem; }
-div.code .indent-2 { padding-left: 2.5rem; }
-div.code .indent-3 { padding-left: 3.5rem; }
-div.code .indent-4 { padding-left: 4.5rem; }
+div.code p {
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 110%;
+}
+
+div.code p.indent-0 { padding-left: 1.0rem; }
+div.code p.indent-1 { padding-left: 3.0rem; }
+div.code p.indent-2 { padding-left: 5.0rem; }
+div.code p.indent-3 { padding-left: 7.0rem; }
+div.code p.indent-4 { padding-left: 9.0rem; }
+
+.code-inline { 
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: lightskyblue;
+}
 
 .textarea {
-    width: 800px;
+    width: 1000px;
     height: 100%;
     overflow: auto;
-    margin-left: calc(50% - 400px);
+    margin-left: max(3rem, calc(50% - 600px));
+    padding: 0 1.5rem 3rem 0;
 }
