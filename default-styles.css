@@ -36,6 +36,7 @@ div.header > div {
 }
 div.header > svg {
     height: 2rem;
+    width: 100%;
 }
 
 .textarea {
