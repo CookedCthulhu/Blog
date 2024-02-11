@@ -11,7 +11,7 @@ h1, h2, h3, h4, h5, p, span {
     font-family: sans-serif, Verdana, Helvetica, "Trebuchet MS";
 }
 
-p { padding: 0.2rem; }
+p { padding-bottom: 0.5rem; }
 
 h1 { font-size: 5.5rem; padding: 2rem 0; }
 h2 { font-size: 2.9rem; padding: 1rem 0; }
@@ -37,7 +37,7 @@ div.header > svg {
 }
 
 div.code {
-    margin: 3.0rem 5.0rem 3.0rem 0.5rem;
+    margin: 1.0rem 5.0rem 2.0rem 0.5rem;
     border: 1px solid var(--phthalo-green);
     border-radius: 1rem;
     padding: 1rem;
