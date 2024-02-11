@@ -8,6 +8,7 @@
 h1, h2, h3, h4, h5, p, span {
     color: var(--main-font-color);
     font-size: 1rem;
+    font-family: sans-serif, Verdana, Helvetica, "Trebuchet MS";
 }
 
 h1 {
@@ -38,6 +39,18 @@ div.header > svg {
     height: 2rem;
     width: 100%;
 }
+
+div.code {
+    width: 100%;
+    margin: 0.5rem;
+    border-radius: 5px solid var(--phthalo-green);
+}
+
+div.code .indent-0 { padding-left: 0.5rem; }
+div.code .indent-1 { padding-left: 1.5rem; }
+div.code .indent-2 { padding-left: 2.5rem; }
+div.code .indent-3 { padding-left: 3.5rem; }
+div.code .indent-4 { padding-left: 4.5rem; }
 
 .textarea {
     width: 800px;
