@@ -27,10 +27,14 @@ div.header {
     top: 0px;
     width: 100%;
 }
+
 div.header > div {
     background-color: var(--phthalo-green);
-    height: 4rem;
+    height: 3rem;
+    padding: 1rem 0 0 3rem;
+    font-style: italic;
 }
+
 div.header > svg {
     height: 2rem;
     width: 100%;
