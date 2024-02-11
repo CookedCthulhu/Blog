@@ -26,6 +26,17 @@ h4 {
     font-size: 1.3rem;
 }
 
+.header {
+    width: 100%;
+}
+.header>div {
+    background-color: var(--phthalo-green);
+    height: 6rem;
+}
+.header>svg {
+    height: 2rem;
+}
+
 .textarea {
     width: 800px;
     height: 100%;
