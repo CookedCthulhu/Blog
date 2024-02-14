@@ -6,7 +6,11 @@
     <title>Cooked Cthulhu's Blog</title>
   </head>
   <body>
-    <div class="header">
+      <div class="header">
+        <div class="sidenav code">
+            <div><a href="#vectorization-net-7">Vectorization in .NET 7</a></div>
+            <div><a href="#haskell-io">Haskell was right</a></div>
+        </div>
         <div><h3>Home</h1></div>
         <svg preserveAspectRatio="none" viewBox="0 0 100 30">
             <path fill="#16433d" d="
@@ -22,7 +26,9 @@
             </path>
         </svg>
     </div>
-    <div class="textarea">
+    <div class="header-shadow"></div>
+
+    <div class="textarea" id="vectorization-net-7">
         <h2>Vectorization has come a long way in .NET</h2>
         <p class="italic smaller">Disclaimer: I wrote this blog post originally for my employer's website, Tekaris. The website does no longer exist to my knowledge.</p>
         <br>
@@ -101,7 +107,7 @@
         <p>Are there still functions that cannot be implemented this way? Would it be even faster to <span class="code-inline">MemoryMarshal.Cast</span> an array of colors to a <span class="code-inline">Vector256&lt;float&gt;</span>? Of course. But the next time you write a simple container of homogenous data, stop and think for a second if you could express it as a <span class="code-inline">Vector</span> internally. Maybe someone will thank you for your extra care someday, or at least learn something new while looking through your source code.</p>
     </div>
 
-    <div class="textarea">
+    <div class="textarea" id="haskell-io">
         <h2>Haskell was right</h2>
         <p>It's somewhat ironic that many programmers think that the (IO) monad is overly complicated and solves problems that could only ever exist in a pure lazy functional programming language; Yet, at the same time, are convinced that the following code should be considered good practice:</p>
         <div class="code">
