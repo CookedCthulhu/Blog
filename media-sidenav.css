@@ -3,7 +3,7 @@ div.header div.sidenav {
 }
 
 div.header div.sidenav div {
-    padding-bottom: 1rem;
+    padding-bottom: 0.5rem;
 }
 
 @media only screen and (min-width: 1500px) {
@@ -13,9 +13,10 @@ div.header div.sidenav div {
         position: absolute;
         top: 8rem;
         left: calc(100% - 400px);
-        width: 300px;
+        width: 250px;
         border-radius: 1rem;
         background-color: var(--main-bg-color);
+        padding: 1rem 2rem 0.5rem 2rem;
         height: auto;
     }
 }
