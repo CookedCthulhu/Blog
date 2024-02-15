@@ -1,0 +1,21 @@
+div.header div.sidenav {
+    display: none;
+}
+
+div.header div.sidenav div {
+    padding-bottom: 1rem;
+}
+
+@media only screen and (min-width: 1500px) {
+    /* side navigation */
+    div.header div.sidenav {
+        display: block;
+        position: absolute;
+        top: 8rem;
+        left: calc(100% - 400px);
+        width: 300px;
+        border-radius: 1rem;
+        background-color: var(--main-bg-color);
+        height: auto;
+    }
+}

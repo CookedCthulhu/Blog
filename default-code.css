@@ -1,0 +1,23 @@
+div.code {
+    margin: 1.0rem 5.0rem 2.0rem 0.5rem;
+    border: 1px solid var(--phthalo-green);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+div.code p {
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 110%;
+}
+
+div.code p.indent-0 { padding-left: 1.0rem; }
+div.code p.indent-1 { padding-left: 3.0rem; }
+div.code p.indent-2 { padding-left: 5.0rem; }
+div.code p.indent-3 { padding-left: 7.0rem; }
+div.code p.indent-4 { padding-left: 9.0rem; }
+
+.code-inline { 
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: lightskyblue;
+}

@@ -1,8 +1,13 @@
 <!doctype html>
 <html lang="en-US">
   <head>
-    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="default-reset.css">
     <link rel="stylesheet" href="default-styles.css">
+    <link rel="stylesheet" href="default-header.css">
+    <link rel="stylesheet" href="default-code.css">
+    <link rel="stylesheet" href="media-highres.css">
+    <link rel="stylesheet" href="media-mobile.css">
+    <link rel="stylesheet" href="media-sidenav.css">
     <title>Cooked Cthulhu's Blog</title>
   </head>
   <body>
@@ -10,6 +15,7 @@
         <div class="sidenav code">
             <div><a href="#vectorization-net-7">Vectorization in .NET 7</a></div>
             <div><a href="#haskell-io">Haskell was right</a></div>
+            <div><a href="#about-me">About</a></div>
         </div>
         <div><h3>Home</h1></div>
         <svg preserveAspectRatio="none" viewBox="0 0 100 30">
@@ -134,6 +140,11 @@
         <br>
         <p>Of course, all of this is less general than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing.</p>
         <p>Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.</p>
+    </div>
+    
+    <div class="textarea" id="about-me">
+        <h2>About</h2>
+        <p>Hi! I'm Philipp, a software developer based in Munich, Germany. While my daily work is mostly full stack development, my interests reach far beyond that, including programming language research, low level optimizations and game engines. Outside of computer science there's also painting and photography, which are huge hobbies, too.</p>
     </div>
   </body>
 </html>
