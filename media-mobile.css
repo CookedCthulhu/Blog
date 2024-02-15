@@ -1,4 +1,4 @@
-@media only screen and (max-width: 1000px) {
+@media screen and (max-width: 1000px) and (orientation: portrait) {
     
     h1, h2, h3, h4, h5, p, span {
         color: var(--main-font-color);
