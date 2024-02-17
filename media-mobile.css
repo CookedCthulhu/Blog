@@ -17,6 +17,7 @@
         color: var(--font-color-muted);
         text-decoration: none;
         font-style: inherit;
+        font-size: 3rem;
     }
     
     .italic { font-style: italic; }

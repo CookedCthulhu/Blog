@@ -17,6 +17,8 @@ div.header-shadow {
     height: 5rem;
     background-image: linear-gradient(var(--main-bg-color), transparent);
     z-index: 1;
+    mask: linear-gradient(black, transparent);
+    backdrop-filter: blur(1px);
 }
 
 div.header > div {
