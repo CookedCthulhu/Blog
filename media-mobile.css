@@ -1,17 +1,20 @@
 @media screen and (max-width: 1000px) {
     
+    :root {
+        width: 100vw;
+    }
+
     h1, h2, h3, h4, h5, p, span {
         color: var(--main-font-color);
-        font-size: 2rem;
     }
 
     p { padding-bottom: 0.5rem; }
 
-    h1 { font-size: 4.0rem; padding: 2rem 0; }
-    h2 { font-size: 3.4rem; padding: 1rem 0; }
-    h3 { font-size: 2.9rem; padding: 0.8rem 0; }
-    h4 { font-size: 2.3rem; padding: 0.5rem 0; }
-    p, span { font-size: 1.5rem; line-height: 150%; }
+    h1 { font-size: 3.0rem; padding: 2rem 0; }
+    h2 { font-size: 2.7rem; padding: 1rem 0; }
+    h3 { font-size: 2.3rem; padding: 0.8rem 0; }
+    h4 { font-size: 1.9rem; padding: 0.5rem 0; }
+    p, span { font-size: 1.2rem; line-height: 150%; }
 
     a {
         color: var(--font-color-muted);
@@ -23,14 +26,24 @@
     .italic { font-style: italic; }
     .smaller { font-size: 1.3rem; }
 
+    div.code {
+        margin: 1.0rem 3rem 2.0rem 0.0rem;
+    }
+
     div.code p {
         font-size: 1.2rem;
         line-break: anywhere;
     }
 
+    div.code p.indent-0 { padding-left: 0.4rem; }
+    div.code p.indent-1 { padding-left: 0.8rem; }
+    div.code p.indent-2 { padding-left: 1.2rem; }
+    div.code p.indent-3 { padding-left: 1.6rem; }
+    div.code p.indent-4 { padding-left: 2.0rem; }
+
     .textarea {
-        width: 80%;
-        padding: 1rem 2rem;
-        font-size: larger;
+        width: calc(100% - 2rem);
+        padding: 1rem 1rem;
+        margin: 0;
     }
 }
