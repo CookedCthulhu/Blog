@@ -11,7 +11,7 @@
     h2 { font-size: 3.4rem; padding: 1rem 0; }
     h3 { font-size: 2.9rem; padding: 0.8rem 0; }
     h4 { font-size: 2.3rem; padding: 0.5rem 0; }
-    p, span { font-size: 2.2rem; line-height: 150%; }
+    p, span { font-size: 1.5rem; line-height: 150%; }
 
     a {
         color: var(--font-color-muted);
@@ -20,11 +20,11 @@
     }
     
     .italic { font-style: italic; }
-    .smaller { font-size: 1.5rem; }
+    .smaller { font-size: 1.3rem; }
 
     div.code p {
-        line-break: loose;
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+        line-break: anywhere;
     }
 
     .textarea {
