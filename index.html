@@ -41,7 +41,7 @@
         <br>
         <p>Vectorization, or Single Instruction Multiple Data (SIMD), is the art of performing the same operation simultaneously on a small block of different pieces of data. While many compilers do support some kind of auto-vectorization, it's often fragile and even small changes can break everything. But SIMD code written by hand is difficult to read and has to be implemented multiple times for multiple platforms, with fallbacks if the customer's CPU doesn't support it.</p>
         <br>
-        <p>Over the Christmas holidays I had the chance to revisit and port a personal project from .NET 6 to .NET 7 and gave vectorization a second look. I don't think the above statement is 100% true anymore. In some way, it turned out to be the opposite. Let me give you an example, a `Color` struct with two methods: `Equals` as an example for an operator and `AlphaBlend`, which is a simple textbook implementation of layering two pixels on top of each other.</p>
+        <p>Over the Christmas holidays I had the chance to revisit and port a personal project from .NET 6 to .NET 7 and gave vectorization a second look. I don't think the above statement is 100% true anymore. In some way, it turned out to be the opposite. Let me give you an example, a <span class="code-inline">Color</span> struct with two methods: <span class="code-inline">Equals</span> as an example for an operator and <span class="code-inline">AlphaBlend</span>, which is a simple textbook implementation of layering two pixels on top of each other.</p>
         <div class="code">
             <p class="indent-0">[StructLayout(LayoutKind.Sequential)]</p>
             <p class="indent-0">public readonly struct Color</p>
@@ -139,7 +139,7 @@
         <p>- <span class="code-inline">IDbConnector</span> because you might want to mock IO away for testing. Or use a different database later on... because that always works without breaking changes...</p>
         <p>- <span class="code-inline">IProcessor</span> because Dependency Injection is the best thing since sliced bread and correctly mocking a database connector is hard.</p>
         <br>
-        <p>Of course, all of this is less general than monads and you will be changing the `IProcessor` interface every time you add or remove a method from `Processor`. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing.</p>
+        <p>Of course, all of this is less general than monads and you will be changing the <span class="code-inline">IProcessor</span> interface every time you add or remove a method from<span class="code-inline">Processor</span>. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing.</p>
         <p>Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.</p>
     </div>
     
