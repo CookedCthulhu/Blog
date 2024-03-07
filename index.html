@@ -17,6 +17,7 @@
         <div class="header-nonsticky"></div>
         <div class="header">
         <div class="sidenav code">
+            <div><a href="#taming-d3">Making D3 readable</a></div>
             <div><a href="#vectorization-net-7">Vectorization in .NET 7</a></div>
             <div><a href="#haskell-io">Haskell was right</a></div>
             <div><a href="#about-me">About</a></div>
@@ -37,6 +38,87 @@
         </svg>
     </div>
     <div class="header-shadow"></div>
+
+    <div class="textarea" id="taming-d3">
+        <h2>Making D3 readable</h2>
+        <p>Over the last few years I worked with multiple projects that used Data Driven Documents, also known as D3.js or just D3. While I think it's one of the best charting libraries out there, especially if you don't know all of your requirements yet, the resulting code can be furstratingly difficult to maintain. It's very much write once and pray that you don't ever have to update it. This shouldn't be the case and recently I really tried to get it right. These are my biggest takeaways.</p>
+        <h3>Refactor early and often</h3>
+        <p>Your first draft shouldn't be your last. Tell your higher ups that this is a proof of concept which needs revision after it's done, especially if it is your first time with D3. If you can't do that, use a different library.</p>
+        <h3>Use layers</h3>
+        <p>You will run into rendering issues when SVG elemens overlap. Tooltips should be drawn on top of everything else, bars over axes, lines below connecting points. Stuff like that. You can either make sure to always get the order of operations right or you can use a layer system, similar to what you find in image manipulation programs.</p>
+        <div class="code">
+            <p class="indent-0">function appendLayer(targetSvg, layerName) &lbrace;</p>
+            <p class="indent-1">return targetSvg.append('g').attr('id', layerName);</p>
+            <p class="indent-0">&rbrace;</p>
+            <br>
+            <p class="indent-0">function selectLayer(sourceSvg, layerName) &lbrace;</p>
+            <p class="indent-1">return sourceSvg.select(`#${layerName}`);</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <div class="code">
+            <p class="indent-0">function createSvgTemplate(...) &lbrace;</p>
+            <p class="indent-1">// ... initialization ...</p>
+            <br>
+            <p class="indent-1">appendLayer(svg, 'background');</p>
+            <p class="indent-1">appendLayer(svg, 'plot_0');</p>
+            <p class="indent-1">appendLayer(svg, 'plot_1');</p>
+            <p class="indent-1">appendLayer(svg, 'plot_2');</p>
+            <p class="indent-1">appendLayer(svg, 'headline');</p>
+            <p class="indent-1">appendLayer(svg, 'tooltip');</p>
+            <br>
+            <p class="indent-1">// ... returns ...</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <h3>Turn D3 into D1</h3>
+        <p>This one took me way too long to realize. Every modern web framework tries to solve two things: state management and data binding. D3 can do both, it's called Data Driven Documents after all, but stop for a second and ask yourself: should you use these features? Your entire team is accustomed to a certain style and now you introduce a new way of doing things. One that's probably worse than what you're already using. The only thing you really care about in the end is an SVG Document. So do yourself a favor and ignore the Data Driven part.</p>
+        <p>If you don't, one issue you will almost definitely run into is the good old <span class="code-inline">undefined</span>. If such a value infects your data, it gets turned into <span class="code-inline">NaN</span> and your SVG will break. It's just that sometimes your really want to signal the absence of something, like in line graphs. You can't just replace <span class="code-inline">undefined</span> with <span class="code-inline">0</span>, a line with incomplete data should be broken up into multiple pieces. It's one of the things you have to handle outside of D3's fluent interface. Now you're mixing application logic with D3 logic.</p>
+        <p>Just draw the stuff you want to draw in a loop, piece by piece, and assign a unique id to each element. If you need to update stuff, query it by id. Delete it? Query by id. Yes, this does mean that you may have to diff your current state with the previous one but it's a small price to pay.</p>
+        <h3>Focus on primitives</h3>
+        <p>For a long time I used to separate my functions into steps that made sense from a business perspective, like <span class="code-inline">initLineGraph</span>, <span class="code-inline">initBarGraph</span>, <span class="code-inline">updateBarGraph</span> etc. but this falls apart with reasonably complicated requirements. Does a new element belong to the initialization function or is it an update? What about deletes? How do I even detect elements ready to be deleted? A better way to do things, even if it sounds worse at first, is to have one function per primitive that does everything:</p>
+        <div class="code">
+            <p class="indent-0">function isPoison(nbr) &lbrace;</p>
+            <p class="indent-1">return nbr == null || isNaN(nbr) || !isFinite(nbr);</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <div class="code">
+            <p class="indent-0">function updatePoint(target, index, coordinates, metadata) &lbrace;</p>
+            <p class="indent-1">const id = `${metadata.id}_${index}`;</p>
+            <p class="indent-1">let selection = selectLayer(target, metadata.layerName)</p>
+            <p class="indent-2">.select(`circle#${id}`);</p>
+            <p class="indent-1">const x = coordinates.x(index);</p>
+            <p class="indent-1">const y = coordinates.y(index);</p>
+            <br>
+            <p class="indent-1">const poison = isPoison(x) || isPoison(y);</p>
+            <p class="indent-1">if (poison && selection.empty()) return;</p>
+            <p class="indent-1">if (poison) &lbrace;</p>
+            <p class="indent-2">selection.remove();</p>
+            <p class="indent-2">return;</p>
+            <p class="indent-1">&rbrace;</p>
+            <br>
+            <p class="indent-1">if (selection.empty()) &lbrace;</p>
+            <p class="indent-2">selection = selectLayer(target, metadata.layerName)</p>
+            <p class="indent-3">.append('circle')</p>
+            <p class="indent-3">.attr('id', id)</p>
+            <p class="indent-3">.attr('r', 3);</p>
+            <p class="indent-2">// more customization</p>
+            <p class="indent-1">&rbrace;</p>
+            <br>
+            <p class="indent-1">selection</p>
+            <p class="indent-2">.transition()</p>
+            <p class="indent-2">.duration(500)</p>
+            <p class="indent-2">.attr('cx', x)</p>
+            <p class="indent-2">.attr('cy', y);</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <p>This is reasonably short, robust, reusable and completely independent of your business requirements. Note that I'm using an <span class="code-inline">index</span> and <span class="code-inline">x</span>/<span class="code-inline">y</span> accessor functions instead of actual data. This not only decouples the interface from the implementation, it also makes your primitive functions more similar: <span class="code-inline">updateLine</span> would use <span class="code-inline">x(index - 1)</span> in addition to <span class="code-inline">x(index)</span> and while an <span class="code-inline">updateRectangle</span> function needs two more accessors to actually make a rectangle, they can just be an extension of your <span class="code-inline">Coordinate</span> interface.</p>
+        <p>Sidenote, if you're having trouble to make a correct <span class="code-inline">rect</span> in combination with D3's scaling functions, use a <span class="code-inline">polygon</span> instead.</p>
+        <h3>Unsolved issues</h3>
+        <p>Interactive features, such as hover effects. I'm getting there but so far no solution felt completely "clean". Like everything else, it's appealing to put events into your initialization block, next to all the other style settings but now your update function is taking callbacks that you sometimes do and sometimes don't need. The exact function that already handles init, update and delete. I don't like it.</p>
+        <h3>Future improvements</h3>
+        <p>So far I didn't have the time or opportunity to implement them but I think projection matrices would be a great addition. As an example, consider the data point <span class="code-inline">(1, 1_000_000)</span>. Your SVG is probably not 1 million units high and D3 has different scaling functions to make sure the point is displayed adequately. The scaled plot is then scaled again because you don't want to just display your data points. Headlines, axes and the legend all need space, too.</p>
+        <p>Assuming the scale range is linear, this could be done much more elegantly with two matrix multiplications. One to scale your data into <span class="code-inline">(-1, -1), (1, 1)</span> space and one to scale it to parts of the SVG container, e.g. to <span class="code-inline">(350, 590), (50, 50)</span>. When the mouse pointer hovers over a chart element, a ray cast would be enough to trace all the way from the affected SVG container in the dom back to the source data that was used to draw a specific element. It could handle click, enter, move and exit events all in one go. You could also discard (almost) everything that's not in the range of <span class="code-inline">(-1, 1)</span> before you do your update and now you have the math to make it work with <span class="code-inline">canvas</span> and <span class="code-inline">WebGPU</span>, too.</p>
+        <p>I'm not sure about what's left of D3 after this. Maybe it's time for a new library...</p>
+    </div>
 
     <div class="textarea" id="vectorization-net-7">
         <h2>Vectorization has come a long way in .NET</h2>
