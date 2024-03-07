@@ -19,4 +19,14 @@ div.header div.sidenav div {
         padding: 1rem 2rem 0.5rem 2rem;
         height: auto;
     }
+    
+    div.header div.sidenav a:hover::before {
+        content: "";
+        display: block;
+        width: 250px;
+        height: 2px;
+        background-color: white;
+        position: absolute;
+        margin: 8px 0px 0px 0px;
+    }
 }
