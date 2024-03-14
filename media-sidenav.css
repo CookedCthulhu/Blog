@@ -20,13 +20,18 @@ div.header div.sidenav div {
         height: auto;
     }
     
-    div.header div.sidenav a:hover::before {
+    div.header div.sidenav a:hover {
+        transition: 200ms ease;
+        color: white;
+    }
+    
+    div.header div.sidenav a:hover::after {
         content: "";
         display: block;
         width: 250px;
         height: 2px;
         background-color: white;
         position: absolute;
-        margin: 8px 0px 0px 0px;
+        margin: 4px 0px 0px 0px;
     }
 }
