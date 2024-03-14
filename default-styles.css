@@ -3,6 +3,8 @@
     --font-color-muted: grey;
     --main-bg-color: #17191E;
     --phthalo-green: #16433d;
+    --inline-code-color: #36736b;
+    --inline-code-bgcolor: #151515;
     background-color: var(--main-bg-color);
     scroll-padding-top: 6rem;
     scroll-behavior: smooth;

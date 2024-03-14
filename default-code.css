@@ -20,5 +20,8 @@ div.code p.indent-4 { padding-left: 9.0rem; }
 .code-inline { 
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    color: lightskyblue;
+    color: var(--inline-code-color);
+    background-color: var(--inline-code-bgcolor);
+    border-radius: 5px;
+    padding: 2px 8px;
 }
