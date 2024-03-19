@@ -43,7 +43,7 @@
 
     <div class="textarea" id="bitonic-merge">
         <h2>About fast merge algorithms</h2>
-        <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting assumes that the arrays similar in size and are often in place, which wasn't suitable for my specific use case. I did find this C++ approach. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time to about 40% of the trivial approach. Let's see if we can get lower than that.</p>
+        <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting is often in place and assumes that the arrays similar in size, which wasn't suitable for my specific use case. <a href="https://dirtyhandscoding.wordpress.com/2017/08/02/vectorizing-stdmerge-with-vpermd-from-avx2-and-lookup-table/">I did however find this C++ approach</a>. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time to about 40% of the trivial approach. Let's see if we can get lower than that.</p>
         <p>The following samples are in C#, not C++, and therefore not comparable. A direct comparison would be interesting but this blog post is quite long already.</p>
         <h3>A Baseline</h3>
         <p>Let's take a look at the trivial algorithm first. We start at zero for all indices, compare two elements each iteration and write the smaller one to the result array. Increment either <span class="code-inline">idxA</span> or <span class="code-inline">idxB</span>, always increment the result index. Repeat until one input has no more elements left. Copy the raminder of the other array.</p>
@@ -88,7 +88,7 @@
             <p class="indent-1">&rbrace;</p>
             <p class="indent-0">&rbrace;</p>
         </div>
-        <p>Is it even worth to write a merge algorithm in 2024 when you could just concatenate two arrays and sort them? Quicksort and all its variations are probably the most researched and optimized topic in computer science.</p>
+        <p>Not too difficult. Done. But is it even worth to write a merge algorithm in 2024 when you could just concatenate two arrays and sort them? Quicksort and all its variations are probably the most researched and optimized topic in computer science.</p>
         <div class="table benchmark">
             <h4>Random sorted integers</h4>
             <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
@@ -259,7 +259,7 @@
             <p>Vector Reversed</p><p>262144</p>  <p>1100.8 us</p>   <p>0.17 us</p>  <p>0.15 us</p>  <p>3.11</p>
         </div>
         <h3>Conclusion</h3>
-        <p>Although I'm happy with the results, there are probably still a lot to explore and a few unoptimized spots left. Batchers's Odd-Even Merge (Sort) and <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a> come to mind. </p>
+        <p>About a third of the scalar's execution time and better than the first attempt in almost every way. Neat, I'm going to leave it like that. Although I'm happy with the results, there are probably still a few unoptimized spots left and different algorithms to explore. Batchers's Odd-Even Merge (Sort) and <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a> come to mind.</p>
     </div>
 
     <div class="textarea" id="taming-d3">
