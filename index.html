@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="default-styles.css">
     <link rel="stylesheet" href="default-header.css">
     <link rel="stylesheet" href="default-code.css">
+    <link rel="stylesheet" href="default-table.css">
     <link rel="stylesheet" href="media-highres.css">
     <link rel="stylesheet" href="media-mobile.css">
     <link rel="stylesheet" href="media-sidenav.css">
@@ -17,6 +18,7 @@
         <div class="header-nonsticky"></div>
         <div class="header">
         <div class="sidenav code">
+            <div><a href="#bitonic-merge">About fast merge algorithms</a></div>
             <div><a href="#taming-d3">Making D3 readable</a></div>
             <div><a href="#vectorization-net-7">Vectorization in .NET 7</a></div>
             <div><a href="#haskell-io">Haskell was right</a></div>
@@ -38,6 +40,227 @@
         </svg>
     </div>
     <div class="header-shadow"></div>
+
+    <div class="textarea" id="bitonic-merge">
+        <h2>About fast merge algorithms</h2>
+        <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting assumes that the arrays similar in size and are often in place, which wasn't suitable for my specific use case. I did find this C++ approach. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time to about 40% of the trivial approach. Let's see if we can get lower than that.</p>
+        <p>The following samples are in C#, not C++, and therefore not comparable. A direct comparison would be interesting but this blog post is quite long already.</p>
+        <h3>A Baseline</h3>
+        <p>Let's take a look at the trivial algorithm first. We start at zero for all indices, compare two elements each iteration and write the smaller one to the result array. Increment either <span class="code-inline">idxA</span> or <span class="code-inline">idxB</span>, always increment the result index. Repeat until one input has no more elements left. Copy the raminder of the other array.</p>
+        <div class="code">
+            <p class="indent-0">static void MergeScalar&lt;T, TComparer&gt;&lpar;</p>
+            <p class="indent-1">Span&lt;T&gt; a,</p>
+            <p class="indent-1">Span&lt;T&gt; b,</p>
+            <p class="indent-1">Span&lt;T&gt; result,</p>
+            <p class="indent-1">TComparer comparer&rpar;</p>
+            <p class="indent-1">where TComparer : IComparer&lt;T&gt;</p>
+            <p class="indent-0">&lbrace;</p>
+            <p class="indent-1">if (a.Length + b.Length > result.Length)</p>
+            <p class="indent-2">throw new ArgumentException("...");</p>
+            <br>
+            <p class="indent-1">var idxA = 0;</p>
+            <p class="indent-1">var idxB = 0;</p>
+            <p class="indent-1">var idxR = 0;</p>
+            <br>
+            <p class="indent-1">while (idxA &lt; a.Length && idxB &lt; b.Length)</p>
+            <p class="indent-1">&lbrace;</p>
+            <p class="indent-2">var c = comparer.Compare(a[idxA], b[idxB]);</p>
+            <br>
+            <p class="indent-2">if (c &lt;= 0)</p>
+            <p class="indent-2">&lbrace;</p>
+            <p class="indent-3">result[idxR] = a[idxA];</p>
+            <p class="indent-3">idxA++;</p>
+            <p class="indent-2">&rbrace;</p>
+            <p class="indent-2">else</p>
+            <p class="indent-2">&lbrace;</p>
+            <p class="indent-3">result[idxR] = a[idxB];</p>
+            <p class="indent-3">idxB++;</p>
+            <p class="indent-2">&rbrace;</p>
+            <p class="indent-2">idxR++;</p>
+            <br>
+            <p class="indent-1">if (c &lt;= 0)</p>
+            <p class="indent-1">&lbrace;</p>
+            <p class="indent-2">a.Slice(idxA).CopyTo(result.Slice(idxR));</p>
+            <p class="indent-1">&rbrace;</p>
+            <p class="indent-1">else</p>
+            <p class="indent-1">&lbrace;</p>
+            <p class="indent-2">b.Slice(idxB).CopyTo(result.Slice(idxR));</p>
+            <p class="indent-1">&rbrace;</p>
+            <p class="indent-0">&rbrace;</p>
+        </div>
+        <p>Is it even worth to write a merge algorithm in 2024 when you could just concatenate two arrays and sort them? Quicksort and all its variations are probably the most researched and optimized topic in computer science.</p>
+        <div class="table benchmark">
+            <h4>Random sorted integers</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Sorted</p><p>100000</p><p>6938.9 us</p><p>76.12 us</p><p>71.21 us</p><p>1.00</p>
+            <p>Scalar</p><p>100000</p><p> 992.1 us</p><p>12.22 us</p><p>11.43 us</p><p>0.14</p>
+        </div>
+        <p>Neat! While the results aren't too surprising, it's nice to see a simple but specialized algorithm beat the optimized but lazy method. Can we do better?</p>
+        <h3>Branchless SIMD Merge</h3>
+        <p>I'm quite proud of this one. I don't claim to be the first who found it but I came up with it completely on my own. It's an extension of the scalar version, which exploits the possibility that the larger array contains more elements clumped together. The code from this point on is specific to integers but should be simple to extend to any data type that supports vectorization.</p>
+        <p>The base structure is similar to the scalar one, except that we operate on raw pointers, which is required by <span class="code-inline">Vector256.Load</span> and should also eliminate a couple of bounds checks.</p>
+        <div class="code">
+            <p class="indent-0">static void MergeVectorized(Span&lt;int&gt; a, Span&lt;int&gt; b, Span&lt;int&gt; result)</p>
+            <p class="indent-0">{</p>
+            <p class="indent-1">if (a.Length + b.Length &gt; result.Length) </p>
+            <p class="indent-2">throw new ArgumentException("...");</p>
+            <br>
+            <p class="indent-1">if (a.Length &lt; b.Length)</p>
+            <p class="indent-1">{</p>
+            <p class="indent-2">MergeVectorized(b, a, result);</p>
+            <p class="indent-2">return;</p>
+            <p class="indent-1">}</p>
+            <p class="indent-1">var idxA = 0;</p>
+            <p class="indent-1">var idxB = 0;</p>
+            <p class="indent-1">var idxR = 0;</p>
+            <p class="indent-1">var countVec = Vector256&lt;int&gt;.Count;</p>
+            <br>
+            <p class="indent-1">unsafe</p>
+            <p class="indent-1">{</p>
+            <p class="indent-2">fixed (int* ptrA = a)</p>
+            <p class="indent-2">fixed (int* ptrB = b)</p>
+            <p class="indent-2">fixed (int* ptrR = result)</p>
+            <p class="indent-2">{</p>
+            <p class="indent-3">while ((idxA + countVec) &lt; a.Length && idxB &lt; b.Length)</p>
+            <p class="indent-3">{</p>
+            <p class="indent-4">// ... see next section ...</p>
+            <p class="indent-3">}</p>
+            <p class="indent-2">}</p>
+            <p class="indent-1">}</p>
+            <br>
+            <p class="indent-1">MergeScalar(</p>
+            <p class="indent-2">a.Slice(idxA),</p>
+            <p class="indent-2">b.Slice(idxB),</p>
+            <p class="indent-2">result.Slice(idxR),</p>
+            <p class="indent-2">...);</p>
+            <p class="indent-0">}</p>
+        </div>
+        <p>Now to the interesting part. We load eight elements from the first argument into a SIMD register and broadcast a single element from the second argument into a second register. As an example, <span class="code-inline">vecA</span> might contain <span class="code-inline">[1, 2, 3, 5, 6, 7, 8, 9]</span> and <span class="code-inline">vecB</span> <span class="code-inline">[4, 4, 4, 4, 4, 4, 4, 4]</span> (<span class="code-inline">4</span> is missing in <span class="code-inline">vecA</span>).</p>
+        <p>Compare both lanes, <span class="code-inline">[-1, -1, -1, 0, 0, 0, 0, 0]</span>, and select the elements based on that comparison: <span class="code-inline">[1, 2, 3, 4, 4, 4, 4, 4]</span>. This part is unconditionally written to <span class="code-inline">result</span>.</p>
+        <p>The comparison result is then used again to figure out how much work we actually did. <span class="code-inline">vecCmp.ExtractMostSignificantBits()</span> would result in <span class="code-inline">11100000</span> here and <span class="code-inline">PopCount(11100000)</span> in <span class="code-inline">3</span>. <span class="code-inline">incrementB</span> is always one, except when all elements in <span class="code-inline">vecA</span> were less than <span class="code-inline">vecB</span>.</p>
+        <div class="code">
+            <p class="indent-0">var vecA = Vector256.Load(ptrA + idxA);</p>
+            <p class="indent-0">var vecB = Vector256.Create(*(ptrB + idxB));</p>
+            <br>
+            <p class="indent-0">var vecCmp = Vector256.LessThan(vecA, vecB);</p>
+            <p class="indent-0">vecA = Vector256.ConditionalSelect(vecCmp, vecA, vecB);</p>
+            <p class="indent-0">vecA.Store(ptrR + idxR);</p>
+            <br>
+            <p class="indent-0">var cmp = vecCmp.ExtractMostSignificantBits();</p>
+            <p class="indent-0">var storeB = BitOperations.PopCount(cmp);</p>
+            <p class="indent-0">var incrementB = 1 - (int)(cmp &lt;&lt; 7);</p>
+            <br>
+            <p class="indent-0">idxA += storeB;</p>
+            <p class="indent-0">idxB += incrementB;</p>
+            <p class="indent-0">idxR += storeB + incrementB;</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Random sorted integers, .NET 7</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Scalar</p><p>262144</p><p>2588.8 us</p><p>4.40 us</p><p>3.90 us</p><p>1.00</p>
+            <p>Vector</p><p>262144</p><p>1050.5 us</p><p>4.40 us</p><p>3.90 us</p><p>0.41</p>
+        </div>
+        <p>Same ratio as the other blog post with a lot less code. They're different compilers, even programming languages but surely the ratio between naive and complex is similar... And doesn't change when we do something small, like an upgrade from .NET 7 to .NET 8. Right?</p>
+        <div class="table benchmark">
+            <h4>Random sorted integers, .NET 8</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Scalar</p><p>262144</p><p>2133.8 us</p><p>1.43 us</p><p>1.27 us</p><p>1.00</p>
+            <p>Vector</p><p>262144</p><p>1056.0 us</p><p>0.21 us</p><p>0.18 us</p><p>0.49</p>
+        </div>
+        <p>The .Net devlopers did their homework. These are the measurments from my desktop machine. My laptop's results are 15% worse because the scalar code allows it to boost higher. Sigh. And the constructed worst case went from tolerable to poor.</p>
+        <div class="table benchmark">
+            <h4>Last element of A is less than first element of B, .NET 7</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Scalar</p><p>262144</p><p>714.5 us</p><p>2.11 us</p><p>1.88 us</p><p>1.00</p>
+            <p>Vector</p><p>262144</p><p>148.4 us</p><p>0.15 us</p><p>0.13 us</p><p>0.21</p>
+            <p>Vector Reversed</p><p>262144</p><p>1046.7 us</p><p>2.52 us</p><p>2.36 us</p><p>1.47</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Last element of A is less than first element of B, .NET 8</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Scalar</p><p>262144</p><p>353.7 us</p><p>0.07 us</p><p>0.07 us</p><p>1.00</p>
+            <p>Vector</p><p>262144</p><p>202.2 us</p><p>0.04 us</p><p>0.04 us</p><p>0.57</p>
+            <p>Vector Reversed</p><p>262144</p><p>1100.8 us</p><p>0.17 us</p><p>0.15 us</p><p>3.11</p>
+        </div>
+        <h3>Bitonic Merge</h3>
+        <p>Back to the drawing board. I knew that Bitonic sorters were an option but it took me some time to wrap my head around it. At least we can skip half of the algorithm because we're only interested in the merge part.</p>
+        <p>My first implementation was 4 times slower than the scalar variant. Bitonic merge takes an ascending and a descending sequence and computes the mininmum/maximum between both. This results in two new sequences where the all elements of the min sequence are less than all elements of the other. This principle is then recursively applied to half of each sequence, until there's nothing left to compare. The algorithm only works with input lengths that are a power of two but many of the comparisons can be done in parallel.</p>
+        <p>It took me some time until I realized that the first Iteration uses <span class="code-inline">Vector256</span> and every following only <span class="code-inline">Vector128</span> for comparisons. We also don't need <span class="code-inline">Vector256.Max(vecA, vecB)</span>, because it gets discarded anyway, and that <span class="code-inline">Vector256.Min(vecA, vecB)</span> encodes how many elements of <span class="code-inline">a</span> and <span class="code-inline">b</span> get stored in the final result. At some point it just clicked and everything fell into place but not until I almost gave up. Don't make my mistake and start with unit tests for every single shuffle, if you want to try it yourself.</p>
+        <div class="code">
+            <p class="indent-0">var vecA = Load(ptrA + idxA);</p>
+            <p class="indent-0">var vecB = Load(ptrB + idxB);</p>
+            <p class="indent-0">var copyVecA = vecA;</p>
+            <p class="indent-0">vecB = Shuffle(vecB, Create(7, 6, 5, 4, 3, 2, 1, 0));</p>
+            <br>
+            <p class="indent-0">vecA = Min(vecA, vecB);</p>
+            <p class="indent-0">var incrementA = BitOperations.PopCount(</p>
+            <p class="indent-1">    Equals&lt;int&gt;(vecA, copyVecA).ExtractMostSignificantBits());</p>
+            <p class="indent-0">vecA = CompareAndSwap128(vecA);</p>
+            <p class="indent-0">vecA = Shuffle(vecA, Create(0, 1, 4, 5, 2, 3, 6, 7));</p>
+            <p class="indent-0">vecA = CompareAndSwap128(vecA);</p>
+            <p class="indent-0">vecA = Shuffle(vecA, Create(0, 2, 4, 6, 1, 3, 5, 7));</p>
+            <p class="indent-0">vecA = CompareAndSwap128(vecA);</p>
+            <p class="indent-0">vecA = Shuffle(vecA, Create(0, 4, 2, 6, 1, 5, 3, 7));</p>
+            <br>
+            <p class="indent-0">vecA.Store(ptrR + idxR);</p>
+            <br>
+            <p class="indent-0">idxA += incrementA;</p>
+            <p class="indent-0">idxB += countVec - incrementA;</p>
+            <p class="indent-0">idxR += countVec;</p>
+        </div>
+        <div class="code">
+            <p class="indent-0">[MethodImpl(MethodImplOptions.AggressiveInlining)]</p>
+            <p class="indent-0">public static Vector256&lt;int&gt; CompareAndSwap128(Vector256&lt;int&gt; vec)</p>
+            <p class="indent-0">{</p>
+            <p class="indent-1">var lower = Vector128.Min(vec.GetLower(), vec.GetUpper());</p>
+            <p class="indent-1">var upper = Vector128.Max(vec.GetLower(), vec.GetUpper());</p>
+            <br>
+            <p class="indent-1">return Create(lower, upper);</p>
+            <p class="indent-0">}</p>
+        </div>
+
+        <h3>Final Benchmarks</h3>
+
+        <div class="table benchmark">
+            <h4>Random sorted integers</h4>
+            <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
+            <p>Scalar</p><p>262144</p><p>2133.8 us</p><p>1.43 us</p><p>1.27 us</p><p>1.00</p>
+            <p>Vector</p><p>262144</p><p>1056.0 us</p><p>0.21 us</p><p>0.18 us</p><p>0.49</p>
+            <p>Bitonic</p><p>262144</p><p>412.3 us</p><p>0.35 us</p><p>0.29 us</p><p>0.19</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Same input</h4>
+            <p>Method</p><p>n</p>       <p>Mean</p>         <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
+            <p>Scalar</p><p>262144</p>  <p>1148.3 us</p>   <p>0.58 us</p>  <p>0.51 us</p>  <p>1.00</p>
+            <p>Vector</p><p>262144</p>  <p>1046.6 us</p>   <p>0.30 us</p>  <p>0.26 us</p>  <p>0.91</p>
+            <p>Bitonic</p><p>262144</p> <p>403.4 us</p>     <p>0.14 us</p>  <p>0.16 us</p>  <p>0.35</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Second Argument is tiny (8 elements)</h4>
+            <p>Method</p><p>n</p>       <p>Mean</p>        <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
+            <p>Scalar</p><p>262144</p>  <p>396.28 us</p>   <p>0.56 us</p>  <p>0.50 us</p>  <p>1.00</p>
+            <p>Vector</p><p>262144</p>  <p>144.36 us</p>   <p>0.05 us</p>  <p>0.04 us</p>  <p>0.36</p>
+            <p>Bitonic</p><p>262144</p> <p>148.09 us</p>   <p>0.04 us</p>  <p>0.04 us</p>  <p>0.37</p>
+            <p>Binary Search</p><p>262144</p>  <p>19.03 us</p>    <p>0.04 us</p>  <p>0.03 us</p>  <p>0.05</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Alternating stair steps</h4>
+            <p>Method</p><p>n</p>       <p>Mean</p>        <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
+            <p>Scalar</p><p>262144</p>  <p>1217.7 us</p>   <p>0.19 us</p>  <p>0.18 us</p>  <p>1.00</p>
+            <p>Vector</p><p>262144</p>  <p>1015.7 us</p>   <p>0.32 us</p>  <p>0.28 us</p>  <p>0.83</p>
+            <p>Bitonic</p><p>262144</p> <p>393.3 us</p>    <p>0.08 us</p>  <p>0.07 us</p>  <p>0.32</p>
+        </div>
+        <div class="table benchmark">
+            <h4>Concatenated (last element of A is less than first of B)</h4>
+            <p>Method</p><p>n</p>       <p>Mean</p>      <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
+            <p>Scalar</p><p>262144</p>  <p>353.7 us</p>  <p>0.07 us</p>  <p>0.07 us</p>  <p>1.00</p>
+            <p>Vector</p><p>262144</p>  <p>202.2 us</p>  <p>0.04 us</p>  <p>0.03 us</p>  <p>0.57</p>
+            <p>Bitonic</p><p>262144</p> <p>267.9 us</p>  <p>0.13 us</p>  <p>0.13 us</p>  <p>0.76</p>
+            <p>Vector Reversed</p><p>262144</p>  <p>1100.8 us</p>   <p>0.17 us</p>  <p>0.15 us</p>  <p>3.11</p>
+        </div>
+        <h3>Conclusion</h3>
+        <p>Although I'm happy with the results, there are probably still a lot to explore and a few unoptimized spots left. Batchers's Odd-Even Merge (Sort) and <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a> come to mind. </p>
+    </div>
 
     <div class="textarea" id="taming-d3">
         <h2>Making D3 readable</h2>

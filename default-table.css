@@ -1,0 +1,49 @@
+div.table {
+    margin: 0 5.0rem 0 0.5rem;
+    padding: 1rem;
+    display: grid;
+}
+
+div.table.benchmark { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
+
+div.table p {
+    border-bottom: 1px solid var(--phthalo-green);
+    padding: 0.5rem 0 0 0;
+    font-size: 1rem;
+}
+
+div.table h4 {
+    color: var(--inline-code-color);
+    grid-column-start: 1;
+    grid-column-end: 7;
+}
+
+div.table p:nth-of-type(6n + 2), 
+div.table p:nth-of-type(6n + 3),
+div.table p:nth-of-type(6n + 4),
+div.table p:nth-of-type(6n + 5),
+div.table p:nth-of-type(6n + 6) {
+    text-align: end;
+}
+
+div.table p:nth-last-of-type(1),
+div.table p:nth-last-of-type(2),
+div.table p:nth-last-of-type(3),
+div.table p:nth-last-of-type(4),
+div.table p:nth-last-of-type(5),
+div.table p:nth-last-of-type(6) {
+    border-bottom: none;
+}
+
+div.table p:nth-of-type(0),
+div.table p:nth-of-type(1),
+div.table p:nth-of-type(2),
+div.table p:nth-of-type(3),
+div.table p:nth-of-type(4),
+div.table p:nth-of-type(5),
+div.table p:nth-of-type(6) {
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--inline-code-color);
+    border-bottom: 2px solid var(--inline-code-color);
+}
