@@ -8,7 +8,7 @@ div.table.benchmark { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
 
 div.table p {
     border-bottom: 1px solid var(--phthalo-green);
-    padding: 0.5rem 0 0 0;
+    padding: 0.5rem 5px 0 0;
     font-size: 1rem;
 }
 
