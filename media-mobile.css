@@ -16,15 +16,21 @@
     h4 { font-size: 1.9rem; padding: 0.5rem 0; }
     p, span { font-size: 1.2rem; line-height: 150%; }
 
-    a {
-        color: var(--font-color-muted);
-        text-decoration: none;
-        font-style: inherit;
-        font-size: 3rem;
+    a::after {
+        content: "↗";
+        display: inline-block;
+        border-radius: 0.3rem;
+        background-color: var(--inline-code-bgcolor);
+        margin: 0 0 0 0.3rem;
+        padding: 0rem 0.6rem 0.1rem 0rem;
     }
-    
+
     .italic { font-style: italic; }
     .smaller { font-size: 1.3rem; }
+
+    div.table {
+        margin: 0;
+    }
 
     div.code {
         overflow: auto;
