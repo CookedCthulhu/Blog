@@ -43,7 +43,7 @@
 
     <div class="textarea" id="bitonic-merge">
         <h2>About fast merge algorithms</h2>
-        <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting is often in place and assumes that the arrays similar in size, which wasn't suitable for my specific use case. <a href="https://dirtyhandscoding.wordpress.com/2017/08/02/vectorizing-stdmerge-with-vpermd-from-avx2-and-lookup-table/">I did however find this C++ approach</a>. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time to about 40% of the trivial approach. Let's see if we can get lower than that.</p>
+        <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting is often in place and assumes that the arrays similar in size, which wasn't suitable for my specific use case. <a href="https://dirtyhandscoding.wordpress.com/2017/08/02/vectorizing-stdmerge-with-vpermd-from-avx2-and-lookup-table/">I did however find this C++ approach</a>. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time down to about 40%. Let's start at the same baseline see if we can get lower than that.</p>
         <p>The following samples are in C#, not C++, and therefore not comparable. A direct comparison would be interesting but this blog post is quite long already.</p>
         <h3>A Baseline</h3>
         <p>Let's take a look at the trivial algorithm first. We start at zero for all indices, compare two elements each iteration and write the smaller one to the result array. Increment either <span class="code-inline">idxA</span> or <span class="code-inline">idxB</span>, always increment the result index. Repeat until one input has no more elements left. Copy the raminder of the other array.</p>
@@ -90,7 +90,7 @@
         </div>
         <p>Not too difficult. But is it even worth to write a merge algorithm in 2024 when you could just concatenate two arrays and sort them? Quicksort and all its variations are probably the most researched and optimized topic in computer science.</p>
         <div class="table benchmark">
-            <h4>Random sorted integers</h4>
+            <h4>Random integers</h4>
             <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
             <p>Sorted</p><p>100000</p><p>6938.9 us</p><p>76.12 us</p><p>71.21 us</p><p>1.00</p>
             <p>Scalar</p><p>100000</p><p> 992.1 us</p><p>12.22 us</p><p>11.43 us</p><p>0.14</p>
@@ -155,14 +155,14 @@
             <p class="indent-0">idxR += storeB + incrementB;</p>
         </div>
         <div class="table benchmark">
-            <h4>Random sorted integers, .NET 7</h4>
+            <h4>Random integers, .NET 7</h4>
             <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
             <p>Scalar</p><p>262144</p><p>2588.8 us</p><p>4.40 us</p><p>3.90 us</p><p>1.00</p>
             <p>Vector</p><p>262144</p><p>1050.5 us</p><p>4.40 us</p><p>3.90 us</p><p>0.41</p>
         </div>
         <p>Same ratio as the other blog post with a lot less code. They're different compilers, even programming languages but surely the ratio between naive and complex is similar... And doesn't change when we do something small, like an upgrade from .NET 7 to .NET 8. Right?</p>
         <div class="table benchmark">
-            <h4>Random sorted integers, .NET 8</h4>
+            <h4>Random integers, .NET 8</h4>
             <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
             <p>Scalar</p><p>262144</p><p>2133.8 us</p><p>1.43 us</p><p>1.27 us</p><p>1.00</p>
             <p>Vector</p><p>262144</p><p>1056.0 us</p><p>0.21 us</p><p>0.18 us</p><p>0.49</p>
@@ -186,7 +186,6 @@
         <p>Back to the drawing board. I knew that Bitonic sorters were an option but it took me some time to wrap my head around it. At least we can skip half of the algorithm because we're only interested in the merge part.</p>
         <p>My first implementation was 4 times slower than the scalar variant. Bitonic merge takes an ascending and a descending sequence and computes the mininmum/maximum between both. This results in two new sequences where the all elements of the min sequence are less than all elements of the other. This principle is then applied recursively to half of each sequence, until there's nothing left to compare. The algorithm only works with input lengths that are a power of two but many of the comparisons can be done in parallel.</p>
         <p>At one point it just clicked and everything fell into place but until that moment it wasn't intuitive at all. I would recommend to just write the algorithm yourself, if you're interested, with one unit test for every shuffle. And if you ever meet someone who doesn't believe in unit tests, make them implement this thing.</p>
-        <p>Ok, we can merge two sequences, sort them and then what? How do we figure out what to store and what to discard? The first operation after loading both sequences and reversing one is <span class="code-inline">Min(vecA, vecB)</span>, which results in a new sequence which is either ascending, descending or switches from one to the other at some point. In other words, it's a sequence that only contains <span class="code-inline">vecA</span>, only contains <span class="code-inline">vecB</span> or starts with a few elements from <span class="code-inline">vecA</span> and then switches to <span class="code-inline">vecB</span>. These are the elements we want to store in <span class="code-inline">result</span>, everyhting else must be discarded. <span class="code-inline">result</span> is not shuffled, which means <span class="code-inline">result[i] == vecA[i] || result[i] == vecB[i]</span>, so we can compare <span class="code-inline">result</span> to <span class="code-inline">vecA</span> and count how many elements from <span class="code-inline">vecA</span> still exist.</p>
         <div class="code">
             <p class="indent-0">var vecA = Load(ptrA + idxA);</p>
             <p class="indent-0">var vecB = Load(ptrB + idxB);</p>
@@ -219,29 +218,59 @@
             <p class="indent-1">return Create(lower, upper);</p>
             <p class="indent-0">}</p>
         </div>
+        <p>Except for the shuffles, this only uses <span class="code-inline">Vector256</span> at the very start. I hesitated to improve this further. Using two full lanes requires more shuffles and <span class="code-inline">ConditionalSelect</span>, so doubling the amount of data without AVX-512 support may not be worth it. Luckily, you don't have to build a correct solution to benchmark it, you just need the right instruction count. The results were promising, so I implemented it. It's ugly and long but doesn't introduce any new concepts.</p>
+        <div class="code">
+            <p class="indent-0">vecA = Load(ptrA + idxA);</p>
+            <p class="indent-0">vecB = Load(ptrA + countVec + idxA);</p>
+            <p class="indent-0">vecC = Load(ptrB + countVec + idxB);</p>
+            <p class="indent-0">vecD = Load(ptrB + idxB);</p>
+            <p class="indent-0">copyVecA = vecA;</p>
+            <p class="indent-0">copyVecB = vecB;</p>
+            <p class="indent-0">vecC = Shuffle(vecC, Create(7, 6, 5, 4, 3, 2, 1, 0));</p>
+            <p class="indent-0">vecD = Shuffle(vecD, Create(7, 6, 5, 4, 3, 2, 1, 0));</p>
+            <br>
+            <p class="indent-0">vecA = Min(vecA, vecC);</p>
+            <p class="indent-0">vecB = Min(vecB, vecD);</p>
+            <p class="indent-0">var incrementA = // same as above with both vecA/vecB and copyVecA/copyVecB</p>
+            <br>
+            <p class="indent-0">vecC = Min(vecA, vecB);</p>
+            <p class="indent-0">vecD = Max(vecA, vecB);</p>
+            <br>
+            <p class="indent-0">vecA = ConditionalSelect(Create(-1, -1, -1, -1, 0, 0, 0, 0), vecC, vecD);</p>
+            <p class="indent-0">vecB = ConditionalSelect(Create(-1, -1, -1, -1, 0, 0, 0, 0), vecD, vecC);</p>
+            <p class="indent-0">vecB = Shuffle(vecB, Create(4, 5, 6, 7, 0, 1, 2, 3));</p>
+            <br>
+            <p class="indent-0">vecC = Min(vecA, vecB);</p>
+            <p class="indent-0">vecD = Max(vecA, vecB);</p>
+            <p class="indent-0">// ... and so on...</p>
+        </div>
 
         <h3>Final Benchmarks</h3>
+        <p>Desktop Ryzen 7 5700, .NET 8</p>
 
         <div class="table benchmark">
-            <h4>Random sorted integers</h4>
+            <h4>Random integers</h4>
             <p>Method</p><p>n</p><p>Mean</p><p>Error</p><p>StdDev</p><p>Ratio</p>
             <p>Scalar</p><p>262144</p><p>2133.8 us</p><p>1.43 us</p><p>1.27 us</p><p>1.00</p>
             <p>Vector</p><p>262144</p><p>1056.0 us</p><p>0.21 us</p><p>0.18 us</p><p>0.49</p>
-            <p>Bitonic</p><p>262144</p><p>412.3 us</p><p>0.35 us</p><p>0.29 us</p><p>0.19</p>
+            <p>Bitonic 128</p><p>262144</p><p>412.3 us</p><p>0.35 us</p><p>0.29 us</p><p>0.19</p>
+            <p>Bitonic 256</p><p>262144</p><p>240.7 us</p><p>0.05 us</p><p>0.04 us</p><p>0.11</p>
         </div>
         <div class="table benchmark">
             <h4>Same input</h4>
             <p>Method</p><p>n</p>       <p>Mean</p>         <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
             <p>Scalar</p><p>262144</p>  <p>1148.3 us</p>   <p>0.58 us</p>  <p>0.51 us</p>  <p>1.00</p>
             <p>Vector</p><p>262144</p>  <p>1046.6 us</p>   <p>0.30 us</p>  <p>0.26 us</p>  <p>0.91</p>
-            <p>Bitonic</p><p>262144</p> <p>403.4 us</p>     <p>0.14 us</p>  <p>0.16 us</p>  <p>0.35</p>
+            <p>Bitonic 128</p><p>262144</p> <p>403.4 us</p>     <p>0.14 us</p>  <p>0.16 us</p>  <p>0.35</p>
+            <p>Bitonic 256</p><p>262144</p> <p>239.0 us</p>     <p>0.18 us</p>  <p>0.15 us</p>  <p>0.21</p>
         </div>
         <div class="table benchmark">
             <h4>Second Argument is tiny (8 elements)</h4>
             <p>Method</p><p>n</p>       <p>Mean</p>        <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
             <p>Scalar</p><p>262144</p>  <p>396.28 us</p>   <p>0.56 us</p>  <p>0.50 us</p>  <p>1.00</p>
             <p>Vector</p><p>262144</p>  <p>144.36 us</p>   <p>0.05 us</p>  <p>0.04 us</p>  <p>0.36</p>
-            <p>Bitonic</p><p>262144</p> <p>148.09 us</p>   <p>0.04 us</p>  <p>0.04 us</p>  <p>0.37</p>
+            <p>Bitonic 128</p><p>262144</p> <p>148.09 us</p>   <p>0.04 us</p>  <p>0.04 us</p>  <p>0.37</p>
+            <p>Bitonic 256</p><p>262144</p> <p>n.a.</p>   <p>n.a.</p>  <p>n.a.</p>  <p>n.a.</p>
             <p>Binary Search</p><p>262144</p>  <p>19.03 us</p>    <p>0.04 us</p>  <p>0.03 us</p>  <p>0.05</p>
         </div>
         <div class="table benchmark">
@@ -249,18 +278,20 @@
             <p>Method</p><p>n</p>       <p>Mean</p>        <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
             <p>Scalar</p><p>262144</p>  <p>1217.7 us</p>   <p>0.19 us</p>  <p>0.18 us</p>  <p>1.00</p>
             <p>Vector</p><p>262144</p>  <p>1015.7 us</p>   <p>0.32 us</p>  <p>0.28 us</p>  <p>0.83</p>
-            <p>Bitonic</p><p>262144</p> <p>393.3 us</p>    <p>0.08 us</p>  <p>0.07 us</p>  <p>0.32</p>
+            <p>Bitonic 128</p><p>262144</p> <p>393.3 us</p>    <p>0.08 us</p>  <p>0.07 us</p>  <p>0.32</p>
+            <p>Bitonic 256</p><p>262144</p> <p>234.0 us</p>    <p>0.04 us</p>  <p>0.03 us</p>  <p>0.19</p>
         </div>
         <div class="table benchmark">
             <h4>Concatenated (last element of A is less than first of B)</h4>
             <p>Method</p><p>n</p>       <p>Mean</p>      <p>Error</p>    <p>StdDev</p>   <p>Ratio</p>
             <p>Scalar</p><p>262144</p>  <p>353.7 us</p>  <p>0.07 us</p>  <p>0.07 us</p>  <p>1.00</p>
             <p>Vector</p><p>262144</p>  <p>202.2 us</p>  <p>0.04 us</p>  <p>0.03 us</p>  <p>0.57</p>
-            <p>Bitonic</p><p>262144</p> <p>267.9 us</p>  <p>0.13 us</p>  <p>0.13 us</p>  <p>0.76</p>
             <p>Vector Reversed</p><p>262144</p>  <p>1100.8 us</p>   <p>0.17 us</p>  <p>0.15 us</p>  <p>3.11</p>
+            <p>Bitonic 128</p><p>262144</p> <p>267.9 us</p>  <p>0.13 us</p>  <p>0.13 us</p>  <p>0.76</p>
+            <p>Bitonic 256</p><p>262144</p> <p>191.0 us</p>  <p>0.09 us</p>  <p>0.07 us</p>  <p>0.54</p>
         </div>
         <h3>Conclusion</h3>
-        <p>About a third of the scalar's execution time and better than the first attempt in almost every way. Neat, I'm going to leave it like that. Although I'm happy with the results, there are probably still a few unoptimized spots left and different algorithms to explore. Batchers's Odd-Even Merge (Sort) and <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a> come to mind.</p>
+        <p>Remember just concatenating and sorting the array at the beginning of this post? The final solution is not only a hundred times more complex, it's also that much faster, which I'd call a win. Although there are probably still a few unoptimized spots left, I'm happy with the results. If someone wants to take it further, there's always <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a>. Happy coding!</p>
     </div>
 
     <div class="textarea" id="taming-d3">
