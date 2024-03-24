@@ -42,3 +42,11 @@ a {
     margin-left: max(3rem, calc(50% - 700px));
     padding: 0 1.5rem 3rem 0;
 }
+
+.textarea::after {
+    content: "";
+    border-bottom: 3px solid var(--phthalo-green);
+    display: block;
+    width: 100%;
+    height: 4rem;
+}
