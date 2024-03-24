@@ -25,4 +25,5 @@ div.code p.indent-4 { padding-left: 9.0rem; }
     background-color: var(--inline-code-bgcolor);
     border-radius: 5px;
     padding: 2px 8px;
+    white-space: nowrap;
 }
