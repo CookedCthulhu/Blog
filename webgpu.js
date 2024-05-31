@@ -86,8 +86,9 @@ const initCanvas = () => {
 
 const makeError = (msg) => ({ success: false, errorMessage: msg });
 const makeSuccess = (value) => ({ success: true, value });
+const match = (caseSuccess, caseError) => maybe => maybe.success ? caseSuccess(maybe.value) : caseError(maybe.errorMessage);
 const successful = maybe => maybe.success;
-const unwrap = maybe => maybe.value;
+const unwrap = match(val => val, msg => { throw `Fatal: expected success, found error: ${msg}`; });
 
 const initWebGpu = async () => {
     if (!navigator.gpu) return makeError('navigator.gpu not supported');
