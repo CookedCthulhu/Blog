@@ -12,7 +12,7 @@ div.header div.sidenav div {
         display: block;
         position: absolute;
         top: 8rem;
-        left: calc(100% - 400px);
+        left: calc(100% - 350px);
         width: 250px;
         border-radius: 1rem;
         background-color: var(--main-bg-color);

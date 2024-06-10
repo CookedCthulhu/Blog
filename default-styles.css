@@ -12,6 +12,11 @@
     font-style: normal;
 }
 
+@keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
 h1, h2, h3, h4, h5, p, span {
     color: var(--main-font-color);
     font-size: 1rem;
@@ -35,18 +40,24 @@ a {
 .italic { font-style: italic; }
 .smaller { font-size: 0.8rem; }
 
-.textarea {
+details {
     width: 1000px;
     height: 100%;
     overflow: auto;
-    margin-left: max(3rem, calc(50% - 700px));
-    padding: 0 1.5rem 3rem 0;
+    border: 1px solid var(--phthalo-green);
+    box-shadow: 0 0 5rem black;
+    border-radius: 1rem;
+
+    margin: 0 0 1rem max(3rem, calc(50% - 700px));
+    padding: 1rem 2.5rem;
+}
+details[open] {
+    margin: 0 0 6rem max(3rem, calc(50% - 700px));
+    padding: 2rem 2.5rem 2rem 2.5rem;
 }
 
-.textarea::after {
-    content: "";
-    border-bottom: 3px solid var(--phthalo-green);
-    display: block;
-    width: 100%;
-    height: 4rem;
-}
+details > summary > h2 { font-size: 1.8rem; }
+details[open] > summary > h2 { font-size: 2.9rem; padding: 0.8rem 0; }
+
+summary { cursor: pointer; }
+details[open] summary ~ * { animation: fade-in 1s ease; }

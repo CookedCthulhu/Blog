@@ -42,9 +42,19 @@
     div.code p.indent-3 { padding-left: 1.6rem; }
     div.code p.indent-4 { padding-left: 2.0rem; }
 
-    .textarea {
-        width: calc(100% - 2rem);
+    details {
+        width: calc(100% - 3rem);
         padding: 1rem 1rem;
         margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    details[open] {
+        width: calc(100% - 3rem);
+        padding: 1rem 1rem;
+        margin: 0;
+        border: none;
+        box-shadow: none;
     }
 }

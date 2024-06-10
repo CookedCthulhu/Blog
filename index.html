@@ -24,7 +24,7 @@
             <div><a href="#haskell-io">Haskell was right</a></div>
             <div><a href="#about-me">About</a></div>
         </div>
-        <div><h3>Home</h1></div>
+        <div><h3>Home</h3></div>
         <svg preserveAspectRatio="none" viewBox="0 0 100 30">
             <path fill="#16433d" d="
                 m-20, 10
@@ -41,8 +41,8 @@
     </div>
     <div class="header-shadow"></div>
 
-    <div class="textarea" id="bitonic-merge">
-        <h2>About fast merge algorithms</h2>
+    <details open id="bitonic-merge">
+        <summary><h2>About fast merge algorithms</h2></summary>
         <p>There's surprisingly little information on the internet about how to merge two sorted arrays. Yes, there are probably thousands of research papers about sorting, including merge sort, but what if you want to just merge two arrays? Sorting is often in place and assumes that the arrays similar in size, which wasn't suitable for my specific use case. <a href="https://dirtyhandscoding.wordpress.com/2017/08/02/vectorizing-stdmerge-with-vpermd-from-avx2-and-lookup-table/">I did however find this C++ approach</a>. It's an impressive solution that uses AVX2 and lookup tables to reduce execution time down to about 40%. Let's start at the same baseline see if we can get lower than that.</p>
         <p>The following samples are in C#, not C++, and therefore not comparable. A direct comparison would be interesting but this blog post is quite long already.</p>
         <h3>A Baseline</h3>
@@ -292,10 +292,10 @@
         </div>
         <h3>Conclusion</h3>
         <p>Remember just concatenating and sorting the array at the beginning of this post? The final solution is not only a hundred times more complex, it's also that much faster, which I'd call a win. Although there are probably still a few unoptimized spots left, I'm happy with the results. If someone wants to take it further, there's always <a href="https://inria.hal.science/hal-01512970v1/document">AVX-512 support</a>. Happy coding!</p>
-    </div>
+    </details>
 
-    <div class="textarea" id="taming-d3">
-        <h2>Making D3 readable</h2>
+    <details open id="taming-d3">
+        <summary><h2>Making D3 readable</h2></summary>
         <p>Over the last few years I worked with multiple projects that used Data Driven Documents, also known as D3.js or just D3. While I think it's one of the best charting libraries out there, especially if you don't know all of your requirements yet, the resulting code can be furstratingly difficult to maintain. It's very much write once and pray that you don't ever have to update it. This shouldn't be the case and recently I really tried to get it right. These are my biggest takeaways.</p>
         <h3>Refactor early and often</h3>
         <p>Your first draft shouldn't be your last. Tell your higher ups that this is a proof of concept which needs revision after it's done, especially if it is your first time with D3. If you can't do that, use a different library.</p>
@@ -376,10 +376,10 @@
         <p>So far I didn't have the time or opportunity to implement them but I think projection matrices would be a great addition. As an example, consider the data point <span class="code-inline">(1, 1_000_000)</span>. Your SVG is probably not 1 million units high and D3 has different scaling functions to make sure the point is displayed adequately. The scaled plot is then scaled again because you don't want to just display your data points. Headlines, axes and the legend all need space, too.</p>
         <p>Assuming the scale range is linear, this could be done much more elegantly with two matrix multiplications. One to scale your data into <span class="code-inline">(-1, -1), (1, 1)</span> space and one to scale it to parts of the SVG container, e.g. to <span class="code-inline">(350, 590), (50, 50)</span>. When the mouse pointer hovers over a chart element, a ray cast would be enough to trace all the way from the affected SVG container in the dom back to the source data that was used to draw a specific element. It could handle click, enter, move and exit events all in one go. You could also discard (almost) everything that's not in the range of <span class="code-inline">(-1, 1)</span> before you do your update and now you have the math to make it work with <span class="code-inline">canvas</span> and <span class="code-inline">WebGPU</span>, too.</p>
         <p>I'm not sure about what's left of D3 after this. Maybe it's time for a new library...</p>
-    </div>
+    </details>
 
-    <div class="textarea" id="vectorization-net-7">
-        <h2>Vectorization has come a long way in .NET</h2>
+    <details open id="vectorization-net-7">
+        <summary><h2>Vectorization has come a long way in .NET</h2></summary>
         <p class="italic smaller">Disclaimer: I wrote this blog post originally for my employer's website, Tekaris. The website does no longer exist to my knowledge.</p>
         <br>
         <p>Vectorization, or Single Instruction Multiple Data (SIMD), is the art of performing the same operation simultaneously on a small block of different pieces of data. While many compilers do support some kind of auto-vectorization, it's often fragile and even small changes can break everything. But SIMD code written by hand is difficult to read and has to be implemented multiple times for multiple platforms, with fallbacks if the customer's CPU doesn't support it.</p>
@@ -455,21 +455,21 @@
             <p class="indent-0">&rbrace;</p>
         </div>
         <p>Are there still functions that cannot be implemented this way? Would it be even faster to <span class="code-inline">MemoryMarshal.Cast</span> an array of colors to a <span class="code-inline">Vector256&lt;float&gt;</span>? Of course. But the next time you write a simple container of homogenous data, stop and think for a second if you could express it as a <span class="code-inline">Vector</span> internally. Maybe someone will thank you for your extra care someday, or at least learn something new while looking through your source code.</p>
-    </div>
+    </details>
 
-    <div class="textarea" id="haskell-io">
-        <h2>Haskell was right</h2>
+    <details open id="haskell-io">
+        <summary><h2>Haskell was right</h2></summary>
         <p>It's somewhat ironic that many programmers think that the (IO) monad is overly complicated and solves problems that could only ever exist in a pure lazy functional programming language; Yet, at the same time, are convinced that the following code should be considered good practice:</p>
         <div class="code">
             <p class="indent-0">public interface IProcessor</p>
             <p class="indent-0">&lbrace;</p>
             <p class="indent-1">async Task<...> ProcessData(int id);</p>
             <p class="indent-0">&rbrace;</p>
-            <br/>
+            <br />
             <p class="indent-0">public class Processor : IProcessor</p>
             <p class="indent-0">&lbrace;</p>
             <p class="indent-1">private readonly IDbConnector dbConnector;</p>
-            <br/>
+            <br />
             <p class="indent-1">public async Task<...> ProcessData(int id)</p>
             <p class="indent-1">&lbrace;</p>
             <p class="indent-2">var data = await dbConnector.QueryAsync(id);</p>
@@ -484,11 +484,11 @@
         <br>
         <p>Of course, all of this is less general than monads and you will be changing the <span class="code-inline">IProcessor</span> interface every time you add or remove a method from<span class="code-inline">Processor</span>. This code is not and never was about composability or API stability, it's a mess of bandaids for the underlying problems that come with IO. You just accepted it as "clean code" because everyone else does the same thing.</p>
         <p>Academia has good reasons for handling things in a certain way and we should build on their foundations, not ignore them.</p>
-    </div>
+    </details>
     
-    <div class="textarea" id="about-me">
-        <h2>About</h2>
+    <details open id="about-me">
+        <summary><h2>About</h2></summary>
         <p>Hi! I'm Philipp, a software developer based in Munich, Germany. While my daily work is mostly full stack development, my interests reach far beyond that, including programming language research, low level optimizations and game engines. Outside of computer science there's also painting and photography, which are huge hobbies, too.</p>
-    </div>
+    </details>
   </body>
 </html>
