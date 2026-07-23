@@ -1,0 +1,45 @@
+.canvas {
+    padding: 1rem;
+}
+
+table {
+    color: var(--main-font-color);
+    font-size: 1rem;
+}
+
+thead {
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--inline-code-color);
+    border-bottom: 2px solid var(--inline-code-color);
+}
+
+th {
+    text-align: left;
+    padding: 0 0 0.2rem 0;
+}
+
+tr {
+    border-bottom: 1px solid var(--inline-code-color);
+    padding: 0.5rem 5px 0 0;
+    font-size: 1rem;
+}
+
+td {
+    padding: 0.5rem 5px 0 0;
+    font-size: 1rem;
+}
+
+.numeric {
+    text-align: right;
+}
+
+td.numeric {
+    font-family: monospace;
+}
+
+h1 {
+    font-size: 1.3rem;
+    color: var(--inline-code-color);
+    padding: 0 0 1rem 0;
+}

@@ -1,0 +1,37 @@
+div.header div.sidenav {
+    display: none;
+}
+
+div.header div.sidenav div {
+    padding-bottom: 0.5rem;
+}
+
+@media only screen and (min-width: 1500px) {
+    /* side navigation */
+    div.header div.sidenav {
+        display: block;
+        position: absolute;
+        top: 8rem;
+        left: calc(100% - 350px);
+        width: 250px;
+        border-radius: 1rem;
+        background-color: var(--main-bg-color);
+        padding: 1rem 2rem 0.5rem 2rem;
+        height: auto;
+    }
+    
+    div.header div.sidenav a:hover {
+        transition: 200ms ease;
+        color: white;
+    }
+    
+    div.header div.sidenav a:hover::after {
+        content: "";
+        display: block;
+        width: 250px;
+        height: 2px;
+        background-color: white;
+        position: absolute;
+        margin: 4px 0px 0px 0px;
+    }
+}

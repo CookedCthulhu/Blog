@@ -1,0 +1,60 @@
+@media screen and (max-width: 1000px) {
+    
+    :root {
+        width: 100vw;
+    }
+
+    h1, h2, h3, h4, h5, p, span {
+        color: var(--main-font-color);
+    }
+
+    p { padding-bottom: 0.5rem; }
+
+    h1 { font-size: 3.0rem; padding: 2rem 0; }
+    h2 { font-size: 2.2rem; padding: 1rem 0; }
+    h3 { font-size: 1.8rem; padding: 0.8rem 0; }
+    h4 { font-size: 1.5rem; padding: 0.5rem 0; }
+    p, span, a { font-size: 1rem; line-height: 150%; }
+
+    a::after {
+        content: "↗";
+        display: inline-block;
+        border-radius: 0.3rem;
+        background-color: var(--inline-code-bgcolor);
+        margin: 0 0 0 0.3rem;
+        padding: 0rem 0.6rem 0.1rem 0rem;
+    }
+
+    .italic { font-style: italic; }
+    .smaller { font-size: 0.8rem; }
+
+    div.table {
+        margin: 0;
+    }
+
+    div.code {
+        margin: 1.0rem 1.0rem 2.0rem 0;
+    }
+
+    div.code p.indent-0 { padding-left: 0.4rem; }
+    div.code p.indent-1 { padding-left: 0.8rem; }
+    div.code p.indent-2 { padding-left: 1.2rem; }
+    div.code p.indent-3 { padding-left: 1.6rem; }
+    div.code p.indent-4 { padding-left: 2.0rem; }
+
+    details {
+        width: calc(100% - 3rem);
+        padding: 1rem 1rem;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    details[open] {
+        width: calc(100% - 3rem);
+        padding: 1rem 1rem;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+}
