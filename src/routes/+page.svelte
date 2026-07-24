@@ -1,7 +1,5 @@
 <script>
-    import BitonicMerge from "./bitonic-merge/+page.svelte";
-    import Blog from "./blog.svelte";
-
+    import Blog from "../components/blog.svelte";
 </script>
 
 <Blog skipHome>

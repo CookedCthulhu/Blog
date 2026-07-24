@@ -28,18 +28,18 @@ export namespace BitonicMerge {
 
     export const vector_lastOfA_isLessThan_firstOfB_net7: Table.Updatable<Timing> = {
         rows: [
-            { name: 'Scalar', count: 262144, mean: 714.5, error: 2.11, stdDev: 1.88, ratio: 1.00, timeUnit: 'us' },
-            { name: 'Vector', count: 262144, mean: 148.4, error: 0.15, stdDev: 0.13, ratio: 0.21, timeUnit: 'us' },
-            { name: 'Vector (Inputs Swapped)', count: 262144, mean: 1046.7, error: 2.52, stdDev: 2.36, ratio: 1.47, timeUnit: 'us' },
+            { name: 'Scalar',                   count: 262144, mean:  714.5, error: 2.11, stdDev: 1.88, ratio: 1.00, timeUnit: 'us' },
+            { name: 'Vector',                   count: 262144, mean:  148.4, error: 0.15, stdDev: 0.13, ratio: 0.21, timeUnit: 'us' },
+            { name: 'Vector (Inputs Swapped)',  count: 262144, mean: 1046.7, error: 2.52, stdDev: 2.36, ratio: 1.47, timeUnit: 'us' },
         ],
         headline: 'Concatenated (all of A less than all of B), .NET 7',
     };
 
     export const vector_lastOfA_isLessThan_firstOfB_net8: Table.Updatable<Timing> = {
         rows: [
-            { name: 'Scalar', count: 262144, mean: 714.5, error: 2.11, stdDev: 1.88, ratio: 1.00, timeUnit: 'us' },
-            { name: 'Vector', count: 262144, mean: 148.4, error: 0.15, stdDev: 0.13, ratio: 0.21, timeUnit: 'us' },
-            { name: 'Vector (Inputs Swapped)', count: 262144, mean: 1046.7, error: 2.52, stdDev: 2.36, ratio: 1.47, timeUnit: 'us' },
+            { name: 'Scalar',                   count: 262144, mean:  353.7, error: 0.07, stdDev: 0.07, ratio: 1.00, timeUnit: 'us' },
+            { name: 'Vector',                   count: 262144, mean:  148.4, error: 0.04, stdDev: 0.04, ratio: 0.57, timeUnit: 'us' },
+            { name: 'Vector (Inputs Swapped)',  count: 262144, mean: 1100.8, error: 0.17, stdDev: 0.15, ratio: 3.11, timeUnit: 'us' },
         ],
         headline: 'Concatenated (all of A less than all of B), .NET 8',
     };
@@ -54,6 +54,27 @@ export namespace BitonicMerge {
         headline: 'Random Integers',
     };
 
+    export const final_sameInput: Table.Updatable<Timing> = {
+        rows: [
+            { name: 'Scalar',       count: 262144, mean: 1148.3, error: 0.58, stdDev: 0.51, ratio: 1.00, timeUnit: 'us' },
+            { name: 'Vector',       count: 262144, mean: 1046.6, error: 0.30, stdDev: 0.26, ratio: 0.91, timeUnit: 'us' },
+            { name: 'Bitonic 128',  count: 262144, mean:  403.4, error: 0.14, stdDev: 0.16, ratio: 0.35, timeUnit: 'us' },
+            { name: 'Bitonic 256',  count: 262144, mean:  239.0, error: 0.18, stdDev: 0.15, ratio: 0.21, timeUnit: 'us' },
+        ],
+        headline: 'Same Input (duplicated array)',
+    };
+
+    export const final_tiny: Table.Updatable<Timing> = {
+        rows: [
+            { name: 'Scalar',       count: 262144, mean: 1148.3, error: 0.58, stdDev: 0.51, ratio: 1.00, timeUnit: 'us' },
+            { name: 'Vector',       count: 262144, mean: 1046.6, error: 0.30, stdDev: 0.26, ratio: 0.91, timeUnit: 'us' },
+            { name: 'Bitonic 128',  count: 262144, mean:  403.4, error: 0.14, stdDev: 0.16, ratio: 0.35, timeUnit: 'us' },
+            { name: 'Bitonic 256 (input too short)',  count: 0, mean:  0, error: 0, stdDev: 0, ratio: 0, timeUnit: 'us' },
+            { name: 'Binary Search', count: 262144, mean: 19.03, error: 0.04, stdDev: 0.03, ratio: 0.05, timeUnit: 'us' },
+        ],
+        headline: 'Second Argument is tiny (8 elements)',
+    };
+
     export const final_stairSteps: Table.Updatable<Timing> = {
         rows: [
             { name: 'Scalar',       count: 262144, mean: 1217.7, error: 0.19, stdDev: 0.18, ratio: 1.00, timeUnit: 'us' },
@@ -62,5 +83,16 @@ export namespace BitonicMerge {
             { name: 'Bitonic 256',  count: 262144, mean:  234.0, error: 0.04, stdDev: 0.03, ratio: 0.19, timeUnit: 'us' },
         ],
         headline: 'Stair steps',
+    };
+
+    export const final_concatenated: Table.Updatable<Timing> = {
+        rows: [
+            { name: 'Scalar',                   count: 262144, mean:  353.7, error: 0.07, stdDev: 0.07, ratio: 1.00, timeUnit: 'us' },
+            { name: 'Vector',                   count: 262144, mean:  202.2, error: 0.04, stdDev: 0.03, ratio: 0.57, timeUnit: 'us' },
+            { name: 'Vector (Inputs Swapped)',  count: 262144, mean: 1100.8, error: 0.17, stdDev: 0.15, ratio: 3.11, timeUnit: 'us' },
+            { name: 'Bitonic 128',              count: 262144, mean:  267.9, error: 0.13, stdDev: 0.13, ratio: 0.76, timeUnit: 'us' },
+            { name: 'Bitonic 256',              count: 262144, mean:  191.0, error: 0.09, stdDev: 0.07, ratio: 0.54, timeUnit: 'us' },
+        ],
+        headline: 'Concatenated (all of A less than all of B), .NET 8',
     };
 }

@@ -2,6 +2,7 @@
     p {
         font-family: 'Courier New', Courier, monospace;
         line-height: 110%;
+        min-height: 0.7rem;
     }
 </style>
 

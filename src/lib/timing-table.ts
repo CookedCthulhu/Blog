@@ -35,7 +35,7 @@ export namespace TimingTable {
 
         export const ratioCol = Column.makeColumnDefinition<Timing>({
             header: 'Ratio',
-            value: x => x.ratio,
+            value: x => x.ratio.toFixed(2),
             classes: { numeric: true },
         });
     }

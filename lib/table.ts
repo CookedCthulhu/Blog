@@ -586,23 +586,3 @@ namespace Table {
         public get element() { return this.canvas; }
     }
 }
-
-const test = TableBuilder
-    .start
-    .withStyleFromUrl('../default-table.css')
-    .next()
-    .withRowHeight(Types.pixel(30))
-    .plainTable()
-    .typed<number[]>()
-    .columns([
-        {
-            value(v) { return v[0] },
-            valueRenderer() { return Column.CellRendererDefault.INSTANCE; },
-            header: 'Blub',
-        }
-    ])
-    .build(Types.Mode.TRACE_DEBUG);
-    
-test.update({
-    rows: [[1], [2]],
-});
